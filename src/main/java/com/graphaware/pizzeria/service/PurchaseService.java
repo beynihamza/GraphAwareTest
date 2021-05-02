@@ -9,12 +9,9 @@ import com.graphaware.pizzeria.repository.PurchaseRepository;
 import com.graphaware.pizzeria.security.PizzeriaUserPrincipal;
 
 import javax.transaction.Transactional;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -27,10 +24,14 @@ public class PurchaseService {
 
     private final PurchaseRepository purchaseRepository;
     private final PizzeriaUserRepository pizzeriaUserRepository;
+    @Autowired
+    private final List<? extends DiscountService> discountServicelist;
 
-    public PurchaseService(PurchaseRepository purchaseRepository, PizzeriaUserRepository pizzeriaUserRepository) {
+    public PurchaseService(PurchaseRepository purchaseRepository, PizzeriaUserRepository pizzeriaUserRepository, List<? extends DiscountService> discountServicelist) {
         this.purchaseRepository = purchaseRepository;
         this.pizzeriaUserRepository = pizzeriaUserRepository;
+        Collections.sort(discountServicelist);
+        this.discountServicelist = discountServicelist;
     }
 
     @PreAuthorize("hasAuthority('ADD_PIZZA')")
@@ -114,25 +115,16 @@ public class PurchaseService {
         if (pizzas == null) {
             return 0.0;
         }
-        // buy a pineapple pizza, get 10% off the others
-        boolean applyPineappleDiscount = false;
+        double initialPrice = 0;
         for (Pizza pizza : pizzas) {
-            if (pizza.getToppings().contains("pineapple")) {
-                applyPineappleDiscount = true;
+            initialPrice += pizza.getPrice();
+        }
+        for (DiscountService discountService : discountServicelist) {
+            if (discountService.isDiscountApplicable(pizzas)) {
+                return discountService.applyDiscount(pizzas);
             }
         }
-        for (Pizza pizza : pizzas) {
-            if (pizza.getToppings().contains("pineapple")) {
-                totalPrice += pizza.getPrice();
-            }  else {
-                if (applyPineappleDiscount) {
-                        totalPrice += pizza.getPrice() *0.9;
-                } else {
-                    totalPrice += pizza.getPrice();
-                }
-            }
-        }
-        return totalPrice;
+        return initialPrice;
     }
 
     @PreAuthorize("hasRole('PIZZA_MAKER')")

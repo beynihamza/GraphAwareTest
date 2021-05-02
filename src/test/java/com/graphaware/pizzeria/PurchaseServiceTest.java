@@ -14,10 +14,12 @@ import com.graphaware.pizzeria.model.PurchaseState;
 import com.graphaware.pizzeria.repository.PizzeriaUserRepository;
 import com.graphaware.pizzeria.repository.PurchaseRepository;
 import com.graphaware.pizzeria.security.PizzeriaUserPrincipal;
+import com.graphaware.pizzeria.service.DiscountService;
 import com.graphaware.pizzeria.service.PizzeriaException;
 import com.graphaware.pizzeria.service.PurchaseService;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,10 +28,12 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-
+@SpringBootTest
 @ExtendWith(MockitoExtension.class)
 public class PurchaseServiceTest {
 
@@ -42,10 +46,11 @@ public class PurchaseServiceTest {
     private PizzeriaUser currentUser;
 
     private PurchaseService purchaseService;
-
+    @Autowired
+    private List<? extends DiscountService> discountServiceList;
     @BeforeEach
     void setUp() {
-        purchaseService = new PurchaseService(purchaseRepository, userRepository);
+        purchaseService = new PurchaseService(purchaseRepository, userRepository, discountServiceList);
         currentUser = new PizzeriaUser();
         currentUser.setName("Papa");
         currentUser.setId(666L);

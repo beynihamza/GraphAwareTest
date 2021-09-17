@@ -71,6 +71,14 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+			<plugin>
+            <groupId>com.amashchenko.maven.plugin</groupId>
+            <artifactId>gitflow-maven-plugin</artifactId>
+            <version>1.16.1-SNAPSHOT</version>
+            <configuration>
+                <!-- optional configuration -->
+            </configuration>
+        </plugin>
 		</plugins>
 	</build>
 
